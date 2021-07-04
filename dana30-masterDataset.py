@@ -88,92 +88,30 @@ plt.title("Missing values per question (including all sub-sections)")
 plt.tight_layout()
 savePNG("NAperQuestion")
 
-# 2020.2 CONVERT CATEGORICAL TO VALUES
+## drop cols (selected manually by inspection)
+drop_cols_init = ["q24.1", "q26.1", "q27", "q33.1", "q35", "q36", "q37", "q38", "q39.1", "q40.1",
+                  "q41.1", "q44.1", "q45.1", "q55", "q56", "q57", "q59", "q60.1", "q62.1", "q64.1"
+                  ]
+def rm_cols(x, drp):
+    drop_cols = []
+    ix = dict(zip(tick, tick_ix))
+    for k in range(len(drp)-1):
+        i0 = ix[drp[k]]
+        i1 = tick_ix[tick_ix.index(i0)+1]
+        drop_cols += list(x[list(x.keys()[i0:i1].values)].keys())
+    drop_cols += ["q64."+str(i) for i in range(1,14)]
+    return drop_cols
 
-def categorical_convert(x):
-    X = x.copy()
-    kk = list(x.keys())
-    
-    for j in kk:
-        uni = x[j].unique()
-        if ("Strongly agree" in uni):
-            X[j][X[j] == "Strongly agree"]             = 1
-            X[j][X[j] == "Agree"]                      = 2
-            X[j][X[j] == "Neither agree nor disagree"] = 3
-            X[j][X[j] == "Disagree"]                   = 4
-            X[j][X[j] == "Strongly disagree"]          = 5
-            X[j][X[j] == "Do not know"]                = 6
-            X[j][X[j] == " "]                          = np.nan
-            
-        elif ("Tick" in uni):
-            X[j][X[j] == "Tick"] = 1
-            X[j][X[j] == " "]    = 0
-            
-        elif ("No" in uni):
-            X[j][X[j] == "Yes"]                        = 1
-            X[j][X[j] == "No"]                         = 2
-            X[j][X[j] == "Not Sure"]                   = 3
-            X[j][X[j] == "Not sure"]                   = 3
-            X[j][X[j] == "Would prefer not to answer"] = 4
-            X[j][X[j] == " "]                          = np.nan
-            
-        elif ("Impartial" in uni):
-            X[j][X[j] == "Impartial"]            = 1
-            X[j][X[j] == "Committed to service"] = 2
-            X[j][X[j] == "Accountable"]          = 3
-            X[j][X[j] == "Respectful"]           = 4
-            X[j][X[j] == "Ethical"]              = 5
-            X[j][X[j] == " "]                    = np.nan
-            
-        elif ("Positive change" in uni):
-            X[j][X[j] == "Very positive change"] = 1
-            X[j][X[j] == "Positive change"]      = 2
-            X[j][X[j] == "No change"]            = 3
-            X[j][X[j] == "Negative change"]      = 4
-            X[j][X[j] == "Very negative change"] = 5
-            X[j][X[j] == " "]                    = np.nan
-            
-        elif ("To a large extent" in uni):
-            X[j][X[j] == "To a very large extent"] = 1
-            X[j][X[j] == "To a large extent"]      = 2
-            X[j][X[j] == "Somewhat"]               = 3
-            X[j][X[j] == "To a small extent"]      = 4
-            X[j][X[j] == "To a very small extent"] = 5
-            X[j][X[j] == " "]                      = np.nan
-            
-        elif ("Don't know" in uni):
-            X[j][X[j] == "Don't know"] = 0
-            
-        elif ("Male" in uni):
-            X[j][X[j] == "Male"]                                   = 1
-            X[j][X[j] == "Female"]                                 = 2
-            X[j][X[j] == "X (Indeterminate/Intersex/Unspecified)"] = 3
-            X[j][X[j] == "Prefer not to say"]                      = 4
-            X[j][X[j] == " "]                                      = np.nan
-            
-        elif ("Under 40 years" in uni):
-            X[j][X[j] == "Under 40 years"]    = 1
-            X[j][X[j] == "40 to 54 years"]    = 2
-            X[j][X[j] == "55 years or older"] = 3
-            X[j][X[j] == " "]                 = np.nan
-            
-        elif ("To a great extent" in uni):
-            X[j][X[j] == "Not at all"]             = 1
-            X[j][X[j] == "Very little"]            = 2
-            X[j][X[j] == "Somewhat"]               = 3
-            X[j][X[j] == "To a great extent"]      = 4
-            X[j][X[j] == "To a very great extent"] = 5
-            X[j][X[j] == " "]                      = np.nan
-            
-        elif ("Often" in uni):
-            X[j][X[j] == "Always"]    = 1
-            X[j][X[j] == "Often"]     = 2
-            X[j][X[j] == "Sometimes"] = 3
-            X[j][X[j] == "Rarely"]    = 4
-            X[j][X[j] == "Never"]     = 5
-            X[j][X[j] == " "]         = np.nan
-            
-    return X
+# 2020.3 CONVERT CATEGORICAL TO VALUES
 
-d20 = categorical_convert(d20Cat)
+from categorical_convert import cat_convert
+
+d20 = cat_convert(d20Cat)
+drop_cols = rm_cols(d20, drop_cols_init)
+d20Numerical = d20.drop(drop_cols, axis=1)
+d20Nominal   = d20[drop_cols]
+
+## save datasets
+saveCSV(d20Numerical, "d20Numerical")
+saveCSV(d20Nominal, "d20Nominal")
 

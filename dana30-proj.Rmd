@@ -1,0 +1,27 @@
+---
+title: "dana30-proj"
+author: "Ignacio"
+date: "03/07/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+
+```
+```{r}
+## load data
+path <- file.path("..","summer21","DANA4830","Proj")
+d20 <- read_csv(file.path(path, "2020-aps-employee-census-dataset.csv"))
+head(d20)
+
+```
+
+```{r}
+
+fix(d20)
+
+```
+
+
