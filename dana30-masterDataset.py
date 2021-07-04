@@ -22,23 +22,20 @@ plt.rcParams.update({'legend.fontsize': 11})
 plt.rcParams.update({'axes.labelsize': 15})
 plt.rcParams.update({'font.size': 15})
 
-## path to save
-path = os.path.join("..","summer21","DANA4830","Proj")
-
 ### savefig
 def savePNG(f):
     fName = f+".png"
-    fPath = os.path.join(path,fName)
+    fPath = os.path.join("figures",fName)
     plt.savefig(fPath, dpi=300)
     
 ### save df as csv
 def saveCSV(f,fName):
     fName2 = fName+".csv"
-    fPath = os.path.join(path,fName2)
+    fPath = os.path.join("data",fName2)
     f.to_csv(fPath)
 
 ## load 2020 data
-d20Cat = pd.read_csv(os.path.join(path,"2020-aps-employee-census-dataset.csv"))
+d20Cat = pd.read_csv(os.path.join("data","2020-aps-employee-census-dataset.csv"))
 
 ## compute tick positions
 tick = [d20Cat.keys()[0], d20Cat.keys()[1], d20Cat.keys()[2], d20Cat.keys()[3]]
