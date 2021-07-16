@@ -111,7 +111,31 @@ drop_cols = rm_cols(d20, drop_cols_init)
 d20Numerical = d20.drop(drop_cols, axis=1)
 d20Nominal   = d20[drop_cols]
 
-## save datasets
-saveCSV(d20Numerical, "d20Numerical")
-saveCSV(d20Nominal, "d20Nominal")
 
+# 2020.4 IMPUTE DATASETS
+
+from sklearn.linear_model import LinearRegression
+from sklearn.impute import KNNImputer
+
+## impute Numerical dataset
+KNNImp = KNNImputer(n_neighbors=2)
+KNNNum = KNNImp.fit_transform(np.array(d20Numerical))
+
+## remove columns with too many missing values in Nominal dataset
+del_cols = d20Nominal.keys()[d20Nominal.isna().mean() >= 0.4]
+d20NomDrop = d20Nominal.drop(del_cols, axis=1)
+
+## impute Nominal  dataset
+KNNNom = KNNImp.fit_transform(np.array(d20NomDrop))
+
+## combine into master dataframe
+NumImp = pd.DataFrame(KNNNum, columns=d20Numerical.columns)
+NomImp = pd.DataFrame(KNNNom, columns=d20NomDrop.columns)
+
+cc = [ci for ci in d20Cat.keys() if ci not in del_cols]
+
+d20Master_aux = pd.concat([NumImp, NomImp], axis=1)
+d20Master = np.round(d20Master_aux[cc])
+
+## save Master dataset
+saveCSV(d20Master, "d20Master")
