@@ -63,7 +63,7 @@ plt.bar(naPercentage2.index, naPercentage2.values)
 plt.ylabel("% of 'empty' in the rows")
 
 plt.tight_layout()
-savePNG("NAperColumn")
+savePNG("NAperColumn2014")
 
 # 2020.1 EXTRACT SECTIONS THAT ARE COMPLETELY MISSING
 
@@ -86,12 +86,12 @@ plt.ylabel("percentage of NA")
 plt.title("Missing values per question (including all sub-sections)")
 
 plt.tight_layout()
-savePNG("NAperQuestion")
+savePNG("NAperQuestion2014")
 
 ## drop cols (selected manually by inspection)
-drop_cols_init = ["q24.1", "q26.1", "q27", "q33.1", "q35", "q36", "q37", "q38", "q39.1", "q40.1",
-                  "q41.1", "q44.1", "q45.1", "q55", "q56", "q57", "q59", "q60.1", "q62.1", "q64.1"
-                  ]
+drop_cols_init = ["q45", "q47", "q52a", "q66", "q67", "q72", "q74", "q75", "q77"]
+bin_cols = ["q26.1", "q43.1", "q58.1", "q63.1", "q64.1", "q71.1", "q81a.1"]
+
 def rm_cols(x, drp):
     drop_cols = []
     ix = dict(zip(tick, tick_ix))
@@ -99,17 +99,23 @@ def rm_cols(x, drp):
         i0 = ix[drp[k]]
         i1 = tick_ix[tick_ix.index(i0)+1]
         drop_cols += list(x[list(x.keys()[i0:i1].values)].keys())
-    drop_cols += ["q64."+str(i) for i in range(1,14)]
+    
+    if ("q77" in drp) & ("q77" not in drop_cols):
+        drop_cols += ["q77"]
+    if ("q81a.1" in drp) & ("q81a.1" not in drop_cols):
+        drop_cols += ["q81"+str(c)+".1" for c in list(map(chr, range(97, 104)))]
     return drop_cols
 
 # 2020.3 CONVERT CATEGORICAL TO VALUES
 
 from categorical_convert import cat_convert
 
-d14 = cat_convert(d14Cat)
-drop_cols = rm_cols(d14, drop_cols_init)
-d14Numerical = d14.drop(drop_cols, axis=1)
-d14Nominal   = d14[drop_cols]
+delete_cols = rm_cols(d14Cat, drop_cols_init)
+d14 = cat_convert(d14Cat.drop(delete_cols, axis=1))
+
+binary_cols = rm_cols(d14, bin_cols)
+d14Numerical = d14.drop(binary_cols, axis=1)
+d14Nominal   = d14[binary_cols]
 
 
 # 2020.4 IMPUTE DATASETS
@@ -132,7 +138,7 @@ KNNNom = KNNImp.fit_transform(np.array(d14NomDrop))
 NumImp = pd.DataFrame(KNNNum, columns=d14Numerical.columns)
 NomImp = pd.DataFrame(KNNNom, columns=d14NomDrop.columns)
 
-cc = [ci for ci in d14Cat.keys() if ci not in del_cols]
+cc = [ci for ci in d14.keys() if ci not in del_cols]
 
 d14Master_aux = pd.concat([NumImp, NomImp], axis=1)
 d14Master = np.round(d14Master_aux[cc])
